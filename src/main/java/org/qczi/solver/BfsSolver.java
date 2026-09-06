@@ -42,6 +42,10 @@ public final class BfsSolver {
             for (int row = 0; row < config.rowCount(); row++) {
                 for (Direction direction : Direction.values()) {
                     int[] next = applyMove(config, current, row, direction);
+                    if (next == null) {
+                        continue;
+                    }
+
                     String nextKey = encode(next);
                     if (parents.containsKey(nextKey)) {
                         continue;
@@ -94,20 +98,20 @@ public final class BfsSolver {
     private static int[] applyMove(PuzzleConfig config, int[] current, int movedRow, Direction direction) {
         int[] next = Arrays.copyOf(current, current.length);
         RowInfluence influence = config.influences()[movedRow];
-        int[] deltas = direction == Direction.LEFT ? influence.leftDeltas() : influence.rightDeltas();
+        int[] deltas = influence.deltasFor(direction);
         int[] rowSizes = config.rowSizes();
 
         for (int i = 0; i < next.length; i++) {
-            next[i] = mod(next[i] + deltas[i], rowSizes[i]);
+            int candidate = next[i] + deltas[i];
+            if (candidate < 0 || candidate >= rowSizes[i]) {
+                return null;
+            }
+            next[i] = candidate;
         }
 
         return next;
     }
 
-    private static int mod(int value, int modulo) {
-        int result = value % modulo;
-        return result < 0 ? result + modulo : result;
-    }
 
     private static String encode(int[] state) {
         StringBuilder sb = new StringBuilder(state.length * 3);

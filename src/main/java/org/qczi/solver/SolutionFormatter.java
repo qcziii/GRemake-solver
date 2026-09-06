@@ -28,10 +28,10 @@ public final class SolutionFormatter {
             Move move = moves.get(i);
             sb.append(System.lineSeparator())
                     .append(i + 1)
-                    .append(". Rzad ")
-                    .append(move.rowIndex())
+                    .append(". Rzad od dolu ")
+                    .append(move.rowIndex() + 1)
                     .append(" -> ")
-                    .append(move.direction() == Direction.LEFT ? "LEWO" : "PRAWO");
+                    .append(move.direction() == Direction.LEFT ? "PRAWO" : "LEWO");
         }
 
         return sb.toString();

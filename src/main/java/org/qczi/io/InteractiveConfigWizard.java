@@ -15,6 +15,10 @@ public final class InteractiveConfigWizard {
 
     public static PuzzleConfig readFromConsole(Scanner scanner) {
         System.out.println("=== Kreator konfiguracji puzzla ===");
+        System.out.println("Rzedy podawaj od dolu do gory.");
+        System.out.println("Kazdy rzad ma " + PuzzleConfig.FIXED_ROW_SIZE + " pozycji, a celem jest srodek (index " + PuzzleConfig.TARGET_POSITION + ").");
+        System.out.println("LEWO zwieksza indeks pozycji (np. 3 -> 4), a PRAWO go zmniejsza (np. 3 -> 2).");
+        System.out.println("Sposob wpisywania delt zostaje bez zmian: podajesz bazowy ruch techniczny 3 -> 2, a przeciwny kierunek wyliczy sie automatycznie.");
 
         int rowCount = readInt(
                 scanner,
@@ -23,43 +27,19 @@ public final class InteractiveConfigWizard {
                 "Podaj liczbe calkowita > 0."
         );
 
-        int[] rowSizes = new int[rowCount];
-        for (int i = 0; i < rowCount; i++) {
-            final int row = i;
-            rowSizes[i] = readInt(
-                    scanner,
-                    "Liczba pozycji (modulo) dla rzedu " + i + ": ",
-                    value -> value > 1,
-                    "Rzad " + row + " musi miec co najmniej 2 pozycje."
-            );
-        }
+        int[] rowSizes = PuzzleConfig.defaultRowSizes(rowCount);
 
         int[] startPositions = new int[rowCount];
         for (int i = 0; i < rowCount; i++) {
-            int rowSize = rowSizes[i];
-            int max = rowSizes[i] - 1;
             startPositions[i] = readInt(
                     scanner,
-                    "Startowa pozycja rzedu " + i + " (0-" + max + "): ",
-                    value -> value >= 0 && value < rowSize,
-                    "Pozycja musi byc w zakresie 0-" + max + "."
+                    "Startowa pozycja rzedu od dolu " + displayRowNumber(i) + " (0-" + (PuzzleConfig.FIXED_ROW_SIZE - 1) + "): ",
+                    value -> value >= 0 && value < PuzzleConfig.FIXED_ROW_SIZE,
+                    "Pozycja musi byc w zakresie 0-" + (PuzzleConfig.FIXED_ROW_SIZE - 1) + "."
             );
         }
 
-        int[] targetPositions = new int[rowCount];
-        boolean customTarget = readYesNo(scanner, "Czy chcesz podac pozycje docelowe (t/n)? ");
-        if (customTarget) {
-            for (int i = 0; i < rowCount; i++) {
-                int rowSize = rowSizes[i];
-                int max = rowSizes[i] - 1;
-                targetPositions[i] = readInt(
-                        scanner,
-                        "Docelowa pozycja rzedu " + i + " (0-" + max + "): ",
-                        value -> value >= 0 && value < rowSize,
-                        "Pozycja musi byc w zakresie 0-" + max + "."
-                );
-            }
-        }
+        int[] targetPositions = PuzzleConfig.defaultTargetPositions(rowCount);
 
         int maxVisited = readInt(
                 scanner,
@@ -72,18 +52,16 @@ public final class InteractiveConfigWizard {
 
         RowInfluence[] influences = new RowInfluence[rowCount];
         for (int movedRow = 0; movedRow < rowCount; movedRow++) {
-            System.out.println("Rzad " + movedRow + " - wpisz delty dla wszystkich rzedow oddzielone spacjami.");
-            int[] left = readIntArray(
+            System.out.println(
+                    "Rzad od dolu " + displayRowNumber(movedRow)
+                            + " - wpisz delty dla bazowego ruchu technicznego 3 -> 2 dla wszystkich rzedow od dolu do gory (tylko -1, 0, 1)."
+            );
+            int[] left = readInfluenceArray(
                     scanner,
-                    "  LEFT  (" + rowCount + " liczb): ",
+                    "  DELTAS (" + rowCount + " liczb, przeciwny kierunek wyliczy sie automatycznie): ",
                     rowCount
             );
-            int[] right = readIntArray(
-                    scanner,
-                    "  RIGHT (" + rowCount + " liczb): ",
-                    rowCount
-            );
-            influences[movedRow] = new RowInfluence(left, right);
+            influences[movedRow] = new RowInfluence(left);
         }
 
         PuzzleConfig config = new PuzzleConfig(
@@ -97,20 +75,6 @@ public final class InteractiveConfigWizard {
 
         ConfigValidator.validate(config);
         return config;
-    }
-
-    private static boolean readYesNo(Scanner scanner, String prompt) {
-        while (true) {
-            System.out.print(prompt);
-            String line = scanner.nextLine().trim().toLowerCase();
-            if (line.equals("t") || line.equals("tak") || line.equals("y") || line.equals("yes")) {
-                return true;
-            }
-            if (line.equals("n") || line.equals("nie") || line.equals("no")) {
-                return false;
-            }
-            System.out.println("Wpisz 't' lub 'n'.");
-        }
     }
 
     private static int readInt(
@@ -188,6 +152,29 @@ public final class InteractiveConfigWizard {
 
             return values;
         }
+    }
+
+    private static int[] readInfluenceArray(Scanner scanner, String prompt, int expectedLength) {
+        while (true) {
+            int[] values = readIntArray(scanner, prompt, expectedLength);
+            boolean valid = true;
+            for (int value : values) {
+                if (Math.abs(value) > 1) {
+                    valid = false;
+                    break;
+                }
+            }
+
+            if (valid) {
+                return values;
+            }
+
+            System.out.println("Kazda delta musi byc rowna -1, 0 lub 1.");
+        }
+    }
+
+    private static int displayRowNumber(int rowIndex) {
+        return rowIndex + 1;
     }
 }
 

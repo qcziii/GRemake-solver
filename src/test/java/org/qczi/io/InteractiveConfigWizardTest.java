@@ -14,24 +14,19 @@ class InteractiveConfigWizardTest {
     void shouldBuildConfigFromConsoleInput() {
         String input = String.join("\n",
                 "2",      // rowCount
-                "3",      // row 0 size
-                "4",      // row 1 size
                 "1",      // row 0 start
                 "3",      // row 1 start
-                "n",      // target positions -> default 0
                 "",       // maxVisitedStates -> default
-                "-1 0",   // row 0 left
-                "1 0",    // row 0 right
-                "0 -1",   // row 1 left
-                "0 1"     // row 1 right
+                "-1 0",   // row 0 left / deltas
+                "0 -1"    // row 1 left / deltas
         ) + "\n";
 
         PuzzleConfig config = InteractiveConfigWizard.readFromConsole(new Scanner(input));
 
         assertEquals(2, config.rowCount());
-        assertArrayEquals(new int[]{3, 4}, config.rowSizes());
+        assertArrayEquals(new int[]{7, 7}, config.rowSizes());
         assertArrayEquals(new int[]{1, 3}, config.startPositions());
-        assertArrayEquals(new int[]{0, 0}, config.targetPositions());
+        assertArrayEquals(new int[]{3, 3}, config.targetPositions());
         assertEquals(1_000_000, config.maxVisitedStates());
     }
 }

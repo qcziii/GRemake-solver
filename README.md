@@ -1,34 +1,47 @@
 # G3Solver
 
 Solver BFS do zagadki z wytrychami (Gothic Remake).  
-Podajesz konfiguracje zamka w JSON (stan startowy, docelowy, liczba rzedow i wplyw ruchu kazdego rzedu na pozostale), a program zwraca najkrotsza sekwencje ruchow.
+Program przyjmuje uproszczony model zamka i zwraca najkrotsza sekwencje ruchow.
 
 Domyslnie program dziala interaktywnie i pyta krok po kroku o cala konfiguracje puzzla w konsoli.
+
+## Zasady modelu
+
+- rzędy liczymy **od dolu do gory**
+- kazdy rzad ma zawsze **7 pozycji** (`0..6`)
+- rzad otwiera sie w **srodkowej pozycji**, wiec stan docelowy to zawsze `index 3`
+- **LEWO** zwieksza indeks pozycji (np. `3 -> 4`), a **PRAWO** go zmniejsza (np. `3 -> 2`)
+- ruch jednego rzedu moze przesunac inny rzad tylko o **-1, 0 albo 1**
+- oddzialywania sa **symetryczne**: jesli ruch w lewo przesuwa jakis rzad w lewo, to ruch w prawo przesunie go o tyle samo w prawo
+- ruch, ktory wypchnalby dowolny rzad poza zakres `0..6`, jest **niedozwolony** (brak zawijania)
+- przy wpisywaniu `deltas` zachowujesz poprzednia techniczna konwencje: opisujesz bazowy ruch `3 -> 2`, a przeciwny kierunek wylicza sie automatycznie
 
 ## Format wejscia JSON
 
 ```json
 {
   "rowCount": 3,
-  "rowSizes": [5, 5, 5],
   "startPositions": [2, 4, 1],
-  "targetPositions": [0, 0, 0],
   "maxVisitedStates": 200000,
   "influences": [
-    { "left": [-1, 1, 0], "right": [1, -1, 0] },
-    { "left": [1, -1, 1], "right": [-1, 1, -1] },
-    { "left": [0, 1, -1], "right": [0, -1, 1] }
+    { "deltas": [-1, 1, 0] },
+    { "deltas": [1, -1, 1] },
+    { "deltas": [0, 1, -1] }
   ]
 }
 ```
 
 Znaczenie pol:
-- `rowSizes[i]` - liczba mozliwych pozycji rzedu `i` (modulo, np. 5)
-- `startPositions[i]` - aktualna pozycja rzedu `i`
-- `targetPositions[i]` - pozycja docelowa rzedu `i` (domyslnie same zera)
-- `influences[r].left[k]` - o ile zmienia sie rzad `k`, gdy przesuniesz rzad `r` w lewo
-- `influences[r].right[k]` - analogicznie dla ruchu w prawo
+- `startPositions[i]` - aktualna pozycja rzedu `i`, gdzie `i = 0` oznacza dolny rzad
+- `influences[r].deltas[k]` - o ile zmienia sie rzad `k` dla bazowego ruchu technicznego `3 -> 2`
+- ruch w prawo automatycznie bierze wartosc przeciwna do `deltas`
 - `maxVisitedStates` - bezpiecznik BFS na duze przestrzenie stanow
+
+Uwagi:
+- `rowSizes` jest opcjonalne, ale jesli je podasz, kazda wartosc musi byc rowna `7`
+- `targetPositions` jest opcjonalne, ale jesli je podasz, kazda wartosc musi byc rowna `3`
+- wszystkie wartosci w `deltas` musza nalezec do zbioru `-1, 0, 1`
+- stary format `left/right` jest nadal akceptowany, ale tylko wtedy, gdy `right` jest dokladnym przeciwienstwem `left`
 
 ## Szybki start
 
@@ -38,7 +51,7 @@ mvn exec:java
 mvn exec:java "-Dexec.args=src/main/resources/sample-puzzle.json"
 ```
 
-Program wypisuje liczbe ruchow i pelna sekwencje (ktory rzad i kierunek).
+Program wypisuje liczbe ruchow i pelna sekwencje (ktory rzad od dolu i kierunek).
 
 - `mvn exec:java` - tryb interaktywny (kreator konfiguracji)
 - `mvn exec:java "-Dexec.args=<sciezka>"` - tryb plikowy JSON

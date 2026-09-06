@@ -3,6 +3,9 @@ package org.qczi.model;
 import java.util.Arrays;
 
 public final class PuzzleConfig {
+    public static final int FIXED_ROW_SIZE = 7;
+    public static final int TARGET_POSITION = 3;
+
     private final int rowCount;
     private final int[] rowSizes;
     private final int[] startPositions;
@@ -48,6 +51,18 @@ public final class PuzzleConfig {
 
     public int maxVisitedStates() {
         return maxVisitedStates;
+    }
+
+    public static int[] defaultRowSizes(int rowCount) {
+        int[] rowSizes = new int[rowCount];
+        Arrays.fill(rowSizes, FIXED_ROW_SIZE);
+        return rowSizes;
+    }
+
+    public static int[] defaultTargetPositions(int rowCount) {
+        int[] targetPositions = new int[rowCount];
+        Arrays.fill(targetPositions, TARGET_POSITION);
+        return targetPositions;
     }
 }
 
