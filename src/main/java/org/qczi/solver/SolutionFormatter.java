@@ -2,9 +2,11 @@ package org.qczi.solver;
 
 import org.qczi.model.Direction;
 import org.qczi.model.Move;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+@Component
 public final class SolutionFormatter {
     private SolutionFormatter() {
     }
@@ -35,6 +37,19 @@ public final class SolutionFormatter {
         }
 
         return sb.toString();
+    }
+
+    public SolveResult formatDirection(SolveResult result) {
+        return new SolveResult(result.solved(), makeAllMovesOppositeDirectionAndChangeIndex(result.moves()), result.visitedStates(), result.message());
+    }
+
+    private List<Move> makeAllMovesOppositeDirectionAndChangeIndex(List<Move> moves) {
+        return moves.stream().map(s -> new Move(s.rowIndex() + 1, getOppositeDirection(s.direction()))).toList();
+    }
+
+    private Direction getOppositeDirection(Direction direction) {
+        if (direction == Direction.RIGHT) return Direction.LEFT;
+        return Direction.RIGHT;
     }
 }
 
