@@ -4,6 +4,7 @@ import org.qczi.model.Direction;
 import org.qczi.model.Move;
 import org.qczi.model.PuzzleConfig;
 import org.qczi.model.RowInfluence;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -13,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 
+@Component
 public final class BfsSolver {
     public SolveResult solve(PuzzleConfig config) {
         int[] start = config.startPositions();

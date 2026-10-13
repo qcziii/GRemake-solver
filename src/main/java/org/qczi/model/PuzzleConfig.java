@@ -1,5 +1,8 @@
 package org.qczi.model;
 
+import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
+
 import java.util.Arrays;
 
 public final class PuzzleConfig {
